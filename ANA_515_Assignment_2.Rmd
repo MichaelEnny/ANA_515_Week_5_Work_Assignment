@@ -1,0 +1,110 @@
+---
+title: "ANA_515_Assignment_2"
+author: "Michael Eniolade"
+date: "3/31/2022"
+output: 
+  html_document :
+    theme : 
+      bootswatch : cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("tidyverse")
+#install.packages("knitr")
+#install.packages("bslib")
+#install.packages("dplyr")
+#install.packages("ggplot2")
+library(tidyverse)
+library(knitr)
+library(bslib)
+library(dplyr)
+library(ggplot2)
+```
+
+##### Description of data
+I will be making use of data in link (https://github.com/fivethirtyeight/data/tree/master/drug-use-by-age) from the "FiveThirtyEight" github repository. This is a semi-structured data in csv format (comma seperated delimiter). The data is originally sourced from the National Survey on Drug Use and Health from the Substance Abuse and Mental Health Data Archive. It contains data behind the story "How Baby Boomers Get High". It covers 13 drugs across 17 age groups.The data governance surrounding the source of data to be used in my analysis as regards “need to know” is taken care of as the adequate data needed for my analysis was provided. And in terms of security and privacy as there is no PII (Personally Identifiable Information) or PHI (Protected Health Information) in the data. Thereby reducing the risk of personal data breach and data loss to the barest minimum.
+
+```{r boomers_drug, cache = FALSE, echo=TRUE}
+url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/drug-use-by-age/drug-use-by-age.csv"
+boomers_drug <- read_csv(url)
+boomers_drg <- boomers_drug[, c(1, 2, 3, 4, 5, 6)]
+glimpse(boomers_drg)
+```
+
+```{r colnamechange, echo=TRUE}
+# Cleaning the data using frames and column selections
+mycols<-data.frame(boomers_drg)
+# selecting my columns to look at alcohol and marijuana usage
+colnames(mycols)<-c('Age','N','alcohol-use','alcohol-frequency','marijuana-use','marijuana-frequency')
+write.csv(mycols,"C:\\Users\\wisdo\\OneDrive\\Desktop\\MCDaniel\\CourseWork\\ANA 515\\week3\\Assignment data\\mycols.csv", row.names = FALSE)
+mycolumn<-read_csv("C:\\Users\\wisdo\\OneDrive\\Desktop\\MCDaniel\\CourseWork\\ANA 515\\week3\\Assignment data\\mycols.csv")
+names(mycolumn)[1]<-'Age_Range'
+names(mycolumn)[2]<-'Counts'
+glimpse(mycolumn)
+```
+
+This data frame has `r nrow(mycolumn)` rows and `r ncol(mycolumn)` columns. The names of the columns and a brief description of each are in the table below:
+
+```{r twocols=TRUE, echo=TRUE}
+mycolum<-boomers_drg[,c(1,2)]
+columns_summary <- data.frame(Columns = c(colnames(mycolum)), 
+                              Description = c("The 'Age' variable is used to measure Age of range of people involved in drugs", "N is the number of people in the age range"))
+kable(columns_summary, caption = "Baby Boomers Getting High")
+```
+
+```{r summarystat=TRUE, echo=TRUE}
+mycolum_2<-boomers_drg[,c(1,2,3)]
+glimpse(mycolum_2)
+min_alcohol<-min(mycolum_2$`alcohol-use`)
+max_alcohol<-max(mycolum_2$`alcohol-use`)
+mean_alcohol<-mean(mycolum_2$`alcohol-use`)
+missing_vals<-sum(is.na(mycolum_2$`alcohol-use`))
+print('Mean of the values for the alcohol_use column is seen below;')
+print(mean_alcohol)
+print('Minimum of the values for the alcohol_use column is seen below')
+print(min_alcohol)
+print('Maximum of the values for the alcohol_use column is seen below')
+print(max_alcohol)
+print('Missing values for the alcohol_use column is seen below')
+print(missing_vals)
+```
+
+```{r visuals_two, echo = TRUE}
+# Change barplot fill colors by age groups for marijuana use
+p<-ggplot(data=boomers_drg, aes(x=age, y=`alcohol-use`, fill=age)) +
+  geom_bar(stat="identity")+theme_minimal() +
+  labs(x = "Age Group (Age)", y = "Alcohol Use",
+  title = "How Baby Boomers get High - Plot 1")
+p
+#Structure of data
+#str(boomers_drg)
+```
+
+```{r visuals_three, echo=TRUE}
+# Change barplot fill colors by age groups for marijuana use
+p<-ggplot(data=boomers_drg, aes(x=age, y=`marijuana-use`, fill=age)) +
+  geom_bar(stat="identity")+theme_minimal() +
+  labs(x = "Age Group (Age)", y = "Marijuana Use",
+  title = "How Baby Boomers get High - Plot 2")
+p
+```
+
+```{r visuals_four, echo=TRUE}
+# Change barplot fill colors by groups
+p<-ggplot(data=boomers_drg, aes(x=age, y=n, fill=age)) +
+  geom_bar(stat="identity", width = 0.9) + theme_minimal() +
+  labs(x = "Age Group (Age)", y = "Total counts on drugs",
+  title = "How Baby Boomers get High - Plot 3")
+p
+```
+
+```{r visuals_five, echo=TRUE}
+boomers_drg%>%
+  ggplot(aes(`marijuana-use`))+geom_freqpoly(binwidth=1)
+```
+
+```{r visuals_six, echo=TRUE}
+boomers_drg%>%
+  ggplot(aes(`alcohol-use`))+geom_freqpoly(binwidth=1)
+```
